@@ -11,9 +11,8 @@ services:
       - ./fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
       - ./fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf:ro
     networks:
-      - secureshop
+      - blue-team
     depends_on:
-      - bunkerweb
       - openobserve
       - loki
     restart: unless-stopped
@@ -30,7 +29,7 @@ services:
     volumes:
       - openobserve-data:/data
     networks:
-      - secureshop
+      - blue-team
     restart: unless-stopped
 
   loki:
@@ -41,7 +40,7 @@ services:
     volumes:
       - loki-data:/loki
     networks:
-      - secureshop
+      - blue-team
     restart: unless-stopped
 
   grafana:
@@ -57,7 +56,7 @@ services:
       - grafana-data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
     networks:
-      - secureshop
+      - blue-team
     depends_on:
       - openobserve
     restart: unless-stopped
@@ -68,5 +67,17 @@ services:
     volumes:
       - ./blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
     networks:
-      - secureshop
+      - blue-team
     restart: unless-stopped
+
+networks:
+  blue-team:
+    external: true
+
+volumes:
+  bw-logs:
+  wazuh-alerts:
+  openobserve-data:
+  loki-data:
+  grafana-data:
+  

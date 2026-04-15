@@ -1,0 +1,5 @@
+<decoder name="bunkerweb-access">
+  <prematch>- \w+ - \d+/\w+/\d+</prematch>
+  <regex>^(\S+) (\S+) - \S+ - \S+ "(\S+) (\S+) \S+" (\d+) \S+ "\S+" "(.+)"</regex>
+  <order>hostname, srcip, protocol, url, id, extra_data</order>
+</decoder>

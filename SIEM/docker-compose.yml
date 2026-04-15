@@ -15,11 +15,11 @@ services:
     volumes:
       - wazuh-alerts:/var/ossec/logs/alerts
       - wazuh-etc:/var/ossec/etc
-      - ./wazuh/manager/ossec.conf:/tmp/custom/ossec.conf:ro
-      - ./wazuh/manager/local_rules.xml:/tmp/custom/local_rules.xml:ro
-      - ./wazuh/manager/local_decoder.xml:/tmp/custom/local_decoder.xml:ro
+      - ./manager/ossec.conf:/tmp/custom/ossec.conf:ro
+      - ./manager/local_rules.xml:/tmp/custom/local_rules.xml:ro
+      - ./manager/local_decoder.xml:/tmp/custom/local_decoder.xml:ro
     networks:
-      - secureshop
+      - blue-team
     restart: unless-stopped
 
   wazuh-agent:
@@ -31,10 +31,18 @@ services:
     volumes:
       - ../secureShop:/monitor
       - bw-logs:/var/log/bunkerweb:ro
-      - ./wazuh/agent/ossec.conf:/var/ossec/etc/ossec.conf
-      - ./wazuh/agent/remove-webshell.sh:/var/ossec/active-response/bin/remove-webshell.sh
+      - ./agent/ossec.conf:/var/ossec/etc/ossec.conf
+      - ./agent/remove-webshell.sh:/var/ossec/active-response/bin/remove-webshell.sh
     networks:
-      - secureshop
+      - blue-team
     depends_on:
       - wazuh-manager
     restart: unless-stopped
+
+networks:
+  blue-team:
+    external: true
+  
+volumes:
+  wazuh-alerts:
+  wazuh-etc:

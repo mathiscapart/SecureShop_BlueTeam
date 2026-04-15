@@ -1,0 +1,32 @@
+apiVersion: 1
+datasources:
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    isDefault: true
+    jsonData:
+      maxLines: 1000
+
+  - name: OpenObserve-Logs
+    type: elasticsearch
+    access: proxy
+    url: http://openobserve:5080/api/default/
+    basicAuth: true
+    basicAuthUser: root@secureshop.local
+    secureJsonData:
+      basicAuthPassword: $__env{ZO_ROOT_USER_PASSWORD}
+    jsonData:
+      esVersion: "7.10.2"
+      timeField: "_timestamp"
+      logMessageField: "log"
+      logLevelField: "status"
+
+  - name: OpenObserve-Metrics
+    type: prometheus
+    access: proxy
+    url: http://openobserve:5080/api/default/prometheus
+    basicAuth: true
+    basicAuthUser: root@secureshop.local
+    secureJsonData:
+      basicAuthPassword: $__env{ZO_ROOT_USER_PASSWORD}
