@@ -1,0 +1,97 @@
+x-bw-env: &bw-env
+  API_WHITELIST_IP: "127.0.0.0/8 10.20.30.0/24 172.29.0.0/24"
+  API_TOKEN: ""
+  DATABASE_URI: "mariadb+pymysql://bunkerweb:changeme@bw-db:3306/db"
+
+services:
+  bunkerweb:
+    image: bunkerity/bunkerweb:1.6.9
+    ports:
+      - "80:8080/tcp"
+      - "443:8443/tcp"
+      - "443:8443/udp"
+    environment:
+      <<: *bw-env
+    restart: unless-stopped
+    networks:
+      - bw-universe
+      - bw-services
+      - blue-team
+
+  bw-scheduler:
+    image: bunkerity/bunkerweb-scheduler:1.6.9
+    environment:
+      <<: *bw-env 
+      BUNKERWEB_INSTANCES: "bunkerweb"
+      SERVER_NAME: ""
+      MULTISITE: "yes"
+      UI_HOST: "http://bw-ui:7000"
+      USE_REDIS: "yes"
+      REDIS_HOST: "redis"
+      USE_REVERSE_PROXY: "yes"
+      REVERSE_PROXY_URL: "/"
+      REVERSE_PROXY_HOST: "http://bw-ui:7000"
+    volumes:
+      - bw-storage:/data
+    restart: unless-stopped
+    networks:
+      - bw-universe
+      - bw-db
+      - blue-team
+
+  bw-ui:
+    image: bunkerity/bunkerweb-ui:1.6.9
+    environment:
+      <<: *bw-env
+    restart: unless-stopped
+    networks:
+      - bw-universe
+      - bw-db
+
+  bw-db:
+    image: mariadb:11
+    command: --max-allowed-packet=67108864
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_DATABASE: "db"
+      MYSQL_USER: "bunkerweb"
+      MYSQL_PASSWORD: "changeme"
+    volumes:
+      - bw-data:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - bw-db
+
+  redis:
+    image: redis:8-alpine
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+      --appendonly yes
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - bw-universe
+
+volumes:
+  bw-data:
+  bw-storage:
+  redis-data:
+
+networks:
+  bw-universe:
+    name: bw-universe
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.20.30.0/24
+  bw-services:
+    name: bw-services
+  bw-db:
+    name: bw-db
+  blue-team:
+    name: blue-team
+    external: true

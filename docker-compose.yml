@@ -1,0 +1,44 @@
+services:
+  web:
+    build:
+      context: ./secureShop
+      dockerfile: Dockerfile
+    container_name: secureshop_web
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: secureshop
+      DB_USER: secureshop
+      DB_PASS: securepass
+    volumes:
+      - ./secureShop:/var/www/html
+    restart: unless-stopped
+    networks:
+      - bw-services
+      - blue-team
+
+  db:
+    image: mysql:8.0
+    container_name: secureshop_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: secureshop
+      MYSQL_USER: secureshop
+      MYSQL_PASSWORD: securepass
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./secureShop/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    restart: unless-stopped
+    networks:
+      - blue-team
+
+volumes:
+  db_data:
+
+networks:
+  blue-team:
+    name: blue-team
+    external: true
+  bw-services:
+    name: bw-services
+    external: true
