@@ -7,10 +7,14 @@ services:
       - "1515:1515"
     entrypoint: /bin/bash
     command: >
-      -c "cp /tmp/custom/ossec.conf /var/ossec/etc/ossec.conf &&
+      -c "set -e &&
+          cp /tmp/custom/ossec.conf /var/ossec/etc/ossec.conf &&
           cp /tmp/custom/local_rules.xml /var/ossec/etc/rules/local_rules.xml &&
           cp /tmp/custom/local_decoder.xml /var/ossec/etc/decoders/local_decoder.xml &&
-          chown wazuh:wazuh /var/ossec/etc/ossec.conf /var/ossec/etc/rules/local_rules.xml /var/ossec/etc/decoders/local_decoder.xml &&
+          chown wazuh:wazuh /var/ossec/etc/ossec.conf
+              /var/ossec/etc/rules/local_rules.xml
+              /var/ossec/etc/decoders/local_decoder.xml &&
+          echo '[OK] Custom config loaded' &&
           exec /init"
     volumes:
       - wazuh-alerts:/var/ossec/logs/alerts
