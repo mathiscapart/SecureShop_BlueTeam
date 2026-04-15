@@ -1,155 +1,45 @@
-<group name="local,secureshop,">
+<group name="local,secureshop">
 
   <rule id="100100" level="12">
-    <if_group>syscheck</if_group>
-    <field name="syscheck.path">uploads</field>
-    <match>added</match>
+    <if_group>syscheck_entry_added</if_group>
+    <field name="syscheck.path" type="pcre2">/uploads/</field>
     <description>[CRITICAL] New file added in /uploads/ directory</description>
-    <group>secureshop,webshell,attack,t1505.003,</group>
+    <group>secureshop,webshell,attack,t1505.003</group>
   </rule>
 
   <rule id="100101" level="15">
     <if_sid>100100</if_sid>
-    <field name="syscheck.path">.php</field>
+    <field name="syscheck.path" type="pcre2">\.php$</field>
     <description>[CRITICAL] PHP WEBSHELL uploaded to /uploads/ — Active Response triggered</description>
-    <group>secureshop,webshell,attack,t1505.003,</group>
+    <group>secureshop,webshell,attack,t1505.003</group>
   </rule>
 
   <rule id="100110" level="10">
-    <if_group>syscheck</if_group>
-    <field name="syscheck.path">.php</field>
-    <match>modified</match>
+    <if_group>syscheck_entry_modified</if_group>
+    <field name="syscheck.path" type="pcre2">\.php$</field>
     <description>[HIGH] PHP source file modified — possible code injection</description>
-    <group>secureshop,file_integrity,attack,t1565.001,</group>
+    <group>secureshop,file_integrity,attack,t1565.001</group>
   </rule>
 
   <rule id="100111" level="12">
-    <if_group>syscheck</if_group>
-    <field name="syscheck.path">db.php|schema.sql</field>
-    <match>modified</match>
+    <if_group>syscheck_entry_modified</if_group>
+    <field name="syscheck.path" type="pcre2">db\.php|schema\.sql</field>
     <description>[CRITICAL] Database config or schema modified</description>
-    <group>secureshop,file_integrity,attack,</group>
+    <group>secureshop,file_integrity,attack</group>
   </rule>
 
   <rule id="100112" level="12">
-    <if_group>syscheck</if_group>
-    <field name="syscheck.path">.htaccess</field>
-    <description>[CRITICAL] .htaccess file created or modified — possible access control bypass</description>
-    <group>secureshop,file_integrity,attack,t1036,</group>
+    <if_group>syscheck_entry_added</if_group>
+    <field name="syscheck.path" type="pcre2">\.htaccess$</field>
+    <description>[CRITICAL] .htaccess file created — possible access control bypass</description>
+    <group>secureshop,file_integrity,attack,t1036</group>
   </rule>
 
-  <rule id="100200" level="0">
-    <decoded_as>bunkerweb-access</decoded_as>
-    <description>BunkerWeb access log event</description>
-    <group>secureshop,web,access,</group>
-  </rule>
-
-  <rule id="100210" level="10">
-    <if_sid>100200</if_sid>
-    <url>select|union|insert|update|delete|drop|concat|char\(|0x|benchmark|sleep\(|waitfor|;--|'--|\/\*</url>
-    <description>[HIGH] SQL injection pattern detected in URL</description>
-    <group>secureshop,sqli,attack,t1190,</group>
-  </rule>
-
-  <rule id="100211" level="12">
-    <if_sid>100210</if_sid>
-    <url>login.php</url>
-    <description>[CRITICAL] SQL injection attempt on login page</description>
-    <group>secureshop,sqli,attack,t1190,</group>
-  </rule>
-
-  <rule id="100212" level="12">
-    <if_sid>100200</if_sid>
-    <url>admin.php</url>
-    <id>200</id>
-    <description>[CRITICAL] Successful access to admin panel</description>
-    <group>secureshop,admin_access,attack,t1078,</group>
-  </rule>
-
-  <rule id="100220" level="3">
-    <if_sid>100200</if_sid>
-    <url>login.php</url>
-    <match>POST</match>
-    <description>Login attempt via POST</description>
-    <group>secureshop,authentication,</group>
-  </rule>
-
-  <rule id="100221" level="10" frequency="8" timeframe="120">
-    <if_matched_sid>100220</if_matched_sid>
-    <same_source_ip />
-    <description>[HIGH] Brute force attack — multiple login attempts from same IP</description>
-    <group>secureshop,brute_force,attack,t1110,</group>
-  </rule>
-
-  <rule id="100222" level="13" frequency="30" timeframe="60">
-    <if_matched_sid>100220</if_matched_sid>
-    <same_source_ip />
-    <description>[CRITICAL] Aggressive brute force attack — 30+ login attempts per minute</description>
-    <group>secureshop,brute_force,attack,t1110,</group>
-  </rule>
-
-  <rule id="100230" level="3">
-    <if_sid>100200</if_sid>
-    <id>404</id>
-    <description>HTTP 404 Not Found</description>
-    <group>secureshop,web,</group>
-  </rule>
-
-  <rule id="100231" level="10" frequency="15" timeframe="30">
-    <if_matched_sid>100230</if_matched_sid>
-    <same_source_ip />
-    <description>[HIGH] Directory bruteforce — 15+ 404 errors from same IP in 30s</description>
-    <group>secureshop,directory_scan,recon,t1595,</group>
-  </rule>
-
-  <rule id="100232" level="13" frequency="50" timeframe="60">
-    <if_matched_sid>100230</if_matched_sid>
-    <same_source_ip />
-    <description>[CRITICAL] Massive directory scan — 50+ 404 errors from same IP</description>
-    <group>secureshop,directory_scan,recon,t1595,</group>
-  </rule>
-
-  <rule id="100240" level="10">
-    <if_sid>100200</if_sid>
-    <match>sqlmap|nikto|gobuster|dirb|wfuzz|nmap|masscan|hydra|burpsuite|ZAP</match>
-    <description>[HIGH] Malicious scanner user-agent detected</description>
-    <group>secureshop,scanner,recon,t1595,</group>
-  </rule>
-
-  <rule id="100250" level="3">
-    <if_sid>100200</if_sid>
-    <url>download_invoice.php</url>
-    <description>Invoice download access</description>
-    <group>secureshop,idor,</group>
-  </rule>
-
-  <rule id="100251" level="10" frequency="10" timeframe="60">
-    <if_matched_sid>100250</if_matched_sid>
-    <same_source_ip />
-    <description>[HIGH] IDOR enumeration — 10+ invoice accesses from same IP in 1 minute</description>
-    <group>secureshop,idor,attack,t1530,</group>
-  </rule>
-
-  <rule id="100260" level="10">
-    <if_sid>100200</if_sid>
-    <url>.env|.git|wp-admin|wp-login|phpmyadmin|/etc/passwd|.htpasswd|.DS_Store|config.php|.bak|.swp</url>
-    <description>[HIGH] Attempt to access sensitive file or path</description>
-    <group>secureshop,sensitive_file,recon,t1083,</group>
-  </rule>
-
-  <rule id="100270" level="12">
-    <if_sid>100200</if_sid>
-    <url>/uploads/</url>
-    <id>200</id>
-    <description>[CRITICAL] File accessed from /uploads/ with status 200 — possible webshell execution</description>
-    <group>secureshop,webshell_exec,attack,t1059,</group>
-  </rule>
-
-  <rule id="100271" level="15">
-    <if_sid>100270</if_sid>
-    <url>.php</url>
-    <description>[CRITICAL] PHP file EXECUTED from /uploads/ — ACTIVE WEBSHELL</description>
-    <group>secureshop,webshell_exec,attack,t1059,</group>
+  <rule id="100113" level="10">
+    <if_group>syscheck_entry_modified</if_group>
+    <field name="syscheck.path" type="pcre2">\.htaccess$</field>
+    <description>[HIGH] .htaccess file modified — possible access control bypass</description>
+    <group>secureshop,file_integrity,attack,t1036</group>
   </rule>
 
 </group>
