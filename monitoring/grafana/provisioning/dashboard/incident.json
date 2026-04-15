@@ -1,0 +1,322 @@
+{
+  "panels": [
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "enableLogDetails": true,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"bunkerweb\", source=\"access\", remote=~\"$attacker_ip\"}",
+          "refId": "A"
+        }
+      ],
+      "title": "ATTACK TIMELINE — All Events for $attacker_ip",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 30,
+            "lineWidth": 2,
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "unit": "reqps"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Allowed (200)"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Redirect(302)"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Blocked (403)"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Not Found (404)"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "id": 2,
+      "targets": [
+        {
+          "expr": "sum (rate({job=\"bunkerweb\", source=\"access\", remote=~\"$attacker_ip\", status=\"200\"}[30s]))",
+          "legendFormat": "Allowed (200)",
+          "refId": "A"
+        },
+        {
+          "expr": "sum (rate({job=\"bunkerweb\", source=\"access\",remote=~\"$attacker_ip\", status=\"302\"} [30s]))",
+          "legendFormat": "Redirect (302)",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate({job=\"bunkerweb\", source=\"access\", remote=~\"$attacker_ip\", status=\"403\"} [30s]))",
+          "legendFormat": "Blocked (403)",
+          "refId": "C"
+        },
+        {
+          "expr": "sum (rate({job=\"bunkerweb\", source=\"access\", remote=~\"$attacker_ip\",status=\"404\"} [30s]))",
+          "legendFormat": "Not Found (404)",
+          "refId": "D"
+        }
+      ],
+      "title": "WAF Blocks vs Allowed — $attacker_ip",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 20,
+            "lineWidth": 2
+          },
+          "unit": "reqps"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      },
+      "id": 3,
+      "targets": [
+        {
+          "expr": "sum by (path) (rate({job=\"bunkerweb\", source=\"access\", remote=~\"$attacker_ip\"}[30s]))",
+          "legendFormat": "{{path}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Targeted Endpoints — $attacker_ip",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 4,
+      "targets": [
+        {
+          "expr": "count_over_time({job=\"bunkerweb\", source=\"access\", remote=~\"$attacker_ip\",path=\"/login.php\", status=\"403\"} [1m])",
+          "legendFormat": "Phase 1: SQLi Attempts (login blocked)",
+          "refId": "A"
+        },
+        {
+          "expr": "count_over_time({job=\"bunkerweb\", source=\"access\", remote=~\"$attacker_ip\", path=\"/admin.php\",status=\"200\"} [1m])",
+          "legendFormat": "Phase 2: Admin Access (SQLi success)",
+          "refId": "B"
+        },
+        {
+          "expr": "count_over_time({job=\"bunkerweb\", source=\"access\", remote=~\"$attacker_ip\", path=~\"/upload.php.*\",method=\"POST\"} [1m])",
+          "legendFormat": "Phase 3: File Upload (webshell)",
+          "refId": "C"
+        },
+        {
+          "expr": "count_over_time({job=\"bunkerweb\", source=\"access\", remote=~\"$attacker_ip\", path=~\"/download_invoice.php.*\"}[1m])",
+          "legendFormat": "Phase 4: IDOR (invoice enum)",
+          "refId": "D"
+        }
+      ],
+      "title": "Attack Phases Detection",
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 5,
+      "options": {
+        "enableLogDetails": true,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"wazuh\", wazuh_level=~\"1[0-5]\"}",
+          "refId": "A"
+        }
+      ],
+      "title": "Wazuh Alerts — File Integrity",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "id": 6,
+      "targets": [
+        {
+          "expr": "sum by (wazuh_description) (count_over_time({job=\"wazuh\"} [1m]))",
+          "legendFormat": "{{wazuh_description}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Wazuh Alerts by Rule",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "id": 7,
+      "options": {
+        "enableLogDetails": true,
+        "showTime": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"bunkerweb\", source=\"modsec\"}",
+          "refId": "A"
+        }
+      ],
+      "title": "ModSecurity WAF Detail Logs",
+      "type": "logs"
+    }
+  ],
+  "refresh": "10s",
+  "tags": [
+    "secureshop",
+    "blueteam",
+    "incident"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "loki",
+          "uid": "P8E80F9AEF21F6940"
+        },
+        "includeAll": true,
+        "multi": false,
+        "name": "attacker_ip",
+        "query": {
+          "label": "remote",
+          "stream": "{job=\"bunkerweb\", source=\"access\"}",
+          "type": 1
+        },
+        "refresh": 2,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "SecureShop - Incident Timeline",
+  "uid": "secureshop-incident"
+}
