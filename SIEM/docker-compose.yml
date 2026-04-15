@@ -5,23 +5,12 @@ services:
     ports:
       - "1514:1514"
       - "1515:1515"
-    entrypoint: /bin/bash
-    command: >
-      -c "set -e &&
-          cp /tmp/custom/ossec.conf /var/ossec/etc/ossec.conf &&
-          cp /tmp/custom/local_rules.xml /var/ossec/etc/rules/local_rules.xml &&
-          cp /tmp/custom/local_decoder.xml /var/ossec/etc/decoders/local_decoder.xml &&
-          chown wazuh:wazuh /var/ossec/etc/ossec.conf
-              /var/ossec/etc/rules/local_rules.xml
-              /var/ossec/etc/decoders/local_decoder.xml &&
-          echo '[OK] Custom config loaded' &&
-          exec /init"
     volumes:
       - wazuh-alerts:/var/ossec/logs/alerts
       - wazuh-etc:/var/ossec/etc
-      - ./manager/ossec.conf:/tmp/custom/ossec.conf:ro
-      - ./manager/local_rules.xml:/tmp/custom/local_rules.xml:ro
-      - ./manager/local_decoder.xml:/tmp/custom/local_decoder.xml:ro
+      - ./manager/ossec.conf:/var/ossec/etc/ossec.conf:ro
+      - ./manager/local_rules.xml:/var/ossec/etc/rules/local_rules.xml:ro
+      - ./manager/local_decoder.xml:/var/ossec/etc/decoders/local_decoder.xml:ro
     networks:
       - blue-team
     restart: unless-stopped

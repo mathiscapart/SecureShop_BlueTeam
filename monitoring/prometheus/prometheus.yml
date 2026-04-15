@@ -23,5 +23,4 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-        - http://bunkerweb:80
-        - http://secureshop:80
+        - secureshop.lan

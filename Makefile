@@ -9,6 +9,8 @@ APP_COMPOSE=-f docker-compose.yml
 
 up:
 	docker network inspect blue-team >NUL 2>&1 || docker network create blue-team
+	docker volume inspect bw-logs >NUL 2>&1 || docker volume create bw-logs
+	docker volume inspect wazuh-alerts >NUL 2>&1 || docker volume create wazuh-alerts
 	docker compose --env-file $(ENV_FILE) $(WAF_COMPOSE) up -d
 	docker compose --env-file $(ENV_FILE) $(SIEM_COMPOSE) up -d
 	docker compose --env-file $(ENV_FILE) $(MONITORING_COMPOSE) up -d
@@ -19,6 +21,12 @@ down:
 	docker compose --env-file $(ENV_FILE) $(SIEM_COMPOSE) down
 	docker compose --env-file $(ENV_FILE) $(WAF_COMPOSE) down
 	docker compose --env-file $(ENV_FILE) $(APP_COMPOSE) down
+
+down_all:
+	docker compose --env-file $(ENV_FILE) $(MONITORING_COMPOSE) down -v
+	docker compose --env-file $(ENV_FILE) $(SIEM_COMPOSE) down -v
+	docker compose --env-file $(ENV_FILE) $(WAF_COMPOSE) down -v
+	docker compose --env-file $(ENV_FILE) $(APP_COMPOSE) down -v
 
 restart: down up
 

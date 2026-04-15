@@ -3,7 +3,7 @@ services:
     build:
       context: ./secureShop
       dockerfile: Dockerfile
-    container_name: secureshop_web
+    container_name: secureshop
     environment:
       DB_HOST: db
       DB_PORT: 3306

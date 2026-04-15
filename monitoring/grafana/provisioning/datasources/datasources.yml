@@ -30,3 +30,9 @@ datasources:
     basicAuthUser: root@secureshop.local
     secureJsonData:
       basicAuthPassword: $__env{ZO_ROOT_USER_PASSWORD}
+
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    
