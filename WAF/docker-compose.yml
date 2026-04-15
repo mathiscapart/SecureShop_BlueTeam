@@ -13,11 +13,8 @@ services:
     environment:
       <<: *bw-env
     restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    volumes:
+      - bw-logs:/var/log/bunkerweb
     networks:
       - bw-universe
       - bw-services
@@ -83,6 +80,9 @@ services:
 
 volumes:
   bw-data:
+  bw-logs:
+    name: bw-logs
+    external: true
   bw-storage:
   redis-data:
 

@@ -99,7 +99,11 @@ networks:
 
 volumes:
   bw-logs:
+    name: bw-logs
+    external: true
   wazuh-alerts:
+    name: wazuh-alerts
+    external: true
   openobserve-data:
   loki-data:
   grafana-data:

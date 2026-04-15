@@ -45,4 +45,9 @@ networks:
   
 volumes:
   wazuh-alerts:
+    name: wazuh-alerts  
+    external: true
   wazuh-etc:
+  bw-logs:
+    name: bw-logs
+    external: true
