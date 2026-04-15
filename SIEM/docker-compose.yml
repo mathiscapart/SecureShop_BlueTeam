@@ -28,6 +28,11 @@ services:
     environment:
       WAZUH_MANAGER: "wazuh-manager"
       WAZUH_AGENT_NAME: "secureshop-agent"
+    entrypoint: /bin/bash
+    command: >
+      -c "chmod 750 /var/ossec/active-response/bin/remove-webshell.sh &&
+          chown root:wazuh /var/ossec/active-response/bin/remove-webshell.sh &&
+          exec /init"
     volumes:
       - ../secureShop:/monitor
       - bw-logs:/var/log/bunkerweb:ro
