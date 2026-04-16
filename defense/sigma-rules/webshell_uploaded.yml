@@ -1,0 +1,37 @@
+title: PHP webshell uploaded to SecureShop
+id: a1b2c3d4-0004-4000-8000-000000000004
+status: experimental
+description: >
+  Detects when Wazuh FIM reports a new .php file created in the
+  /uploads/ directory. This indicates a potential webshell upload
+  via the unrestricted upload.php endpoint.
+author: Blue Team SecureShop
+date: 2026/04/14
+level: critical
+tags:
+  - attack.persistence
+  - attack.t1505.003
+
+logsource:
+  category: fim
+  product: wazuh
+
+detection:
+  new_php_file:
+    rule.description|contains: "added"
+    syscheck.path|contains: "/uploads/"
+    syscheck.path|endswith: ".php"
+  condition: new_php_file
+
+# === Equivalent SQL for OpenObserve / Grafana Alerting ===
+#
+# SELECT
+#   _timestamp,
+#   str_match(syscheck_path, '%.php') AS is_php,
+#   syscheck_path,
+#   rule_description
+# FROM wazuh
+# WHERE _timestamp >= NOW() - INTERVAL 1 MINUTE
+#   AND rule_description LIKE '%added%'
+#   AND syscheck_path LIKE '%/uploads/%'
+#   AND syscheck_path LIKE '%.php'
