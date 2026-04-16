@@ -1,0 +1,40 @@
+title: SQLi attempts followed by successful admin login
+id: a1b2c3d4-0001-4000-8000-000000000001
+status: experimental
+description: >
+  Detects when an IP triggers multiple WAF blocks (SQLi pattern)
+  then successfully accesses the admin panel within 5 minutes.
+  Indicates a successful SQL injection bypass.
+author: Blue Team SecureShop
+date: 2026/04/14
+level: critical
+tags:
+  - attack.initial_access
+  - attack.t1190
+
+logsource:
+  category: webserver
+  product: bunkerweb
+
+detection:
+  sqli_blocks:
+    status: 403
+    path|contains: "login.php"
+  admin_access:
+    status: 200
+    path|contains: "admin.php"
+  condition: sqli_blocks | count() > 10 and admin_access
+  timeframe: 5m
+  group-by: remote
+
+# === Equivalent SQL for OpenObserve / Grafana Alerting ===
+# Run every 30 seconds in Grafana
+#
+# SELECT
+#   remote AS attacker_ip,
+#   SUM(CASE WHEN status = '403' AND path LIKE '%login.php%' THEN 1 ELSE 0 END) AS sqli_blocks,
+#   SUM(CASE WHEN status = '200' AND path LIKE '%admin.php%' THEN 1 ELSE 0 END) AS admin_success
+# FROM bunkerweb
+# WHERE _timestamp >= NOW() - INTERVAL 5 MINUTE
+# GROUP BY remote
+# HAVING sqli_blocks > 10 AND admin_success > 0

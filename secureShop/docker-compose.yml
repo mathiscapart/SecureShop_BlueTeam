@@ -1,9 +1,13 @@
+networks:
+  bw-services:
+    external: true
+
 services:
   web:
     build:
-      context: ./secureShop
+      context: .
       dockerfile: Dockerfile
-    container_name: secureshop
+    container_name: secureshop_web
     environment:
       DB_HOST: db
       DB_PORT: 3306
@@ -11,11 +15,13 @@ services:
       DB_USER: secureshop
       DB_PASS: securepass
     volumes:
-      - ./secureShop:/var/www/html
-    restart: unless-stopped
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - bw-services
-      - blue-team
+    restart: unless-stopped
 
   db:
     image: mysql:8.0
@@ -27,18 +33,15 @@ services:
       MYSQL_PASSWORD: securepass
     volumes:
       - db_data:/var/lib/mysql
-      - ./secureShop/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
-    restart: unless-stopped
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpass"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
-      - blue-team
+      - bw-services
+    restart: unless-stopped
 
 volumes:
   db_data:
-
-networks:
-  blue-team:
-    name: blue-team
-    external: true
-  bw-services:
-    name: bw-services
-    external: true

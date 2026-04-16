@@ -1,0 +1,12 @@
+global:
+  slack_api_url: 'https://hooks.slack.com/services/PLACEHOLDER'
+
+route:
+  receiver: slack-notifications
+  group_by: [alertname, datacenter, app]
+
+receivers:
+  - name: slack-notifications
+    slack_configs:
+      - channel: '#alerts'
+        text: '{{ .GroupLabels.app }}/{{ .GroupLabels.alertname }}'

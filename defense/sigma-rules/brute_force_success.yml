@@ -1,0 +1,45 @@
+title: Brute force login followed by successful authentication
+id: a1b2c3d4-0002-4000-8000-000000000002
+status: experimental
+description: >
+  Detects when an IP sends more than 50 POST requests to login.php
+  with 401/403 responses, then gets a 200/302 response.
+  Indicates successful credential brute force.
+author: Blue Team SecureShop
+date: 2026/04/14
+level: high
+tags:
+  - attack.credential_access
+  - attack.t1110
+
+logsource:
+  category: webserver
+  product: bunkerweb
+
+detection:
+  failed_logins:
+    method: POST
+    path|contains: "login.php"
+    status|in:
+      - 401
+      - 403
+  successful_login:
+    method: POST
+    path|contains: "login.php"
+    status|in:
+      - 200
+      - 302
+  condition: failed_logins | count() > 50 and successful_login
+  timeframe: 10m
+  group-by: remote
+
+# === Equivalent SQL for OpenObserve / Grafana Alerting ===
+#
+# SELECT
+#   remote AS attacker_ip,
+#   SUM(CASE WHEN method = 'POST' AND path LIKE '%login.php%' AND status IN ('401','403') THEN 1 ELSE 0 END) AS failed,
+#   SUM(CASE WHEN method = 'POST' AND path LIKE '%login.php%' AND status IN ('200','302') THEN 1 ELSE 0 END) AS success
+# FROM bunkerweb
+# WHERE _timestamp >= NOW() - INTERVAL 10 MINUTE
+# GROUP BY remote
+# HAVING failed > 50 AND success > 0

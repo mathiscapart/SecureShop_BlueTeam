@@ -1,0 +1,37 @@
+title: IDOR enumeration on invoice download
+id: a1b2c3d4-0003-4000-8000-000000000003
+status: experimental
+description: >
+  Detects when an IP accesses multiple different invoice IDs
+  in a short timeframe via download_invoice.php?id=N.
+  Indicates IDOR exploitation to access other users' invoices.
+author: Blue Team SecureShop
+date: 2026/04/14
+level: high
+tags:
+  - attack.collection
+  - attack.t1530
+
+logsource:
+  category: webserver
+  product: bunkerweb
+
+detection:
+  invoice_access:
+    path|contains: "download_invoice.php"
+    status: 200
+  condition: invoice_access | count(distinct path) > 5
+  timeframe: 1m
+  group-by: remote
+
+# === Equivalent SQL for OpenObserve / Grafana Alerting ===
+#
+# SELECT
+#   remote AS attacker_ip,
+#   COUNT(DISTINCT path) AS unique_invoices
+# FROM bunkerweb
+# WHERE _timestamp >= NOW() - INTERVAL 1 MINUTE
+#   AND path LIKE '%download_invoice.php%'
+#   AND status = '200'
+# GROUP BY remote
+# HAVING unique_invoices > 5
