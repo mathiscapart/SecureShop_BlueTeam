@@ -94,14 +94,13 @@ volumes:
 networks:
   bw-universe:
     name: bw-universe
-    ipam:
-      driver: default
-      config:
-        - subnet: 10.20.30.0/24
+    external: true
   bw-services:
     name: bw-services
+    external: true
   bw-db:
     name: bw-db
+    external: true
   blue-team:
     name: blue-team
     external: true

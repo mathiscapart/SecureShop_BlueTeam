@@ -9,12 +9,16 @@ APP_COMPOSE=-f docker-compose.yml
 
 up:
 	docker network inspect blue-team >NUL 2>&1 || docker network create blue-team
+	docker network inspect bw-universe >NUL 2>&1 || docker network create --subnet=10.20.30.0/24 bw-universe
+	docker network inspect bw-services >NUL 2>&1 || docker network create bw-services
+	docker network inspect bw-db >NUL 2>&1 || docker network create bw-db
 	docker volume inspect bw-logs >NUL 2>&1 || docker volume create bw-logs
 	docker volume inspect wazuh-alerts >NUL 2>&1 || docker volume create wazuh-alerts
+	docker volume inspect wazuh-etc >NUL 2>&1 || docker volume create wazuh-etc
+	docker compose --env-file $(ENV_FILE) $(APP_COMPOSE) up -d --build
 	docker compose --env-file $(ENV_FILE) $(WAF_COMPOSE) up -d
 	docker compose --env-file $(ENV_FILE) $(SIEM_COMPOSE) up -d
 	docker compose --env-file $(ENV_FILE) $(MONITORING_COMPOSE) up -d
-	docker compose --env-file $(ENV_FILE) $(APP_COMPOSE) up -d --build
 
 down:
 	docker compose --env-file $(ENV_FILE) $(MONITORING_COMPOSE) down
